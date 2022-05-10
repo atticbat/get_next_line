@@ -15,6 +15,7 @@
 
 # include <unistd.h>
 # include <stdlib.h>
+# include <limits.h>
 
 # if (BUFFER_SIZE < 0)
 #  undef BUFFER_SIZE

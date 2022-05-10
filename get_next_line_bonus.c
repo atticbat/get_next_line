@@ -12,34 +12,37 @@
 
 #include "get_next_line_bonus.h"
 
-static char	*store_append(char *store, char *buff, char **hold)
+static char	*store_append(char *store, char *buff)
 {
+	char	*temp;
+
 	if (store == NULL)
-		store = ft_strdup (buff);
+		return (ft_strdup(buff));
 	else
 	{
-		*hold = ft_strjoin(store, buff);
-		free (store);
-		return (*hold);
+		temp = store;
+		store = ft_strjoin(store, buff);
+		free (temp);
+		return (store);
 	}
-	return (store);
 }
 
-static char	*generate_string(char *store, char **out, char **hold, int len)
+static char	*generate_strings(char *store, int len, char **out)
 {
+	char	*temp;
+
 	if (store[len] == '\n')
 	{
+		temp = store;
 		*out = ft_substr(store, 0, len + 1);
-		*hold = ft_strdup(&(store[len + 1]));
-		free (store);
-		return (*hold);
+		store = ft_strdup(store + len + 1);
+		free (temp);
+		return (store);
 	}
 	else
 	{
-		if (store[0] == '\0')
-			store = NULL;
-		free (*hold);
 		*out = ft_strdup(store);
+		free(store);
 		return (NULL);
 	}
 }
@@ -60,37 +63,48 @@ static char	*ft_strchr(const char *str, int c)
 	return (NULL);
 }
 
-static char	*free_all(char *hold)
+static int	check_null(char *buffer, int len, char **store)
 {
-	if (hold)
-		free (hold);
-	return (NULL);
+	if (*buffer == '\0')
+		return (1);
+	if (*store)
+	{
+		if (**store == '\0' && len == 0)
+		{
+			free (*store);
+			*store = NULL;
+			return (1);
+		}
+	}
+	else if (len == 0)
+	{
+		return (1);
+	}
+	return (0);
 }
 
 char	*get_next_line(int fd)
 {
-	static t_static	ctnr[1024];
-	char			*hold;
+	static t_static	ctnr[OPEN_MAX];
 	char			*out;
 	int				len;
 
-	hold = NULL;
 	out = NULL;
 	len = 1;
-	if (fd < 0 || BUFFER_SIZE < 1 || fd > 1024)
+	if (fd < 0 || BUFFER_SIZE < 1 || fd > OPEN_MAX)
 		return (NULL);
 	while (len > 0 && !(ft_strchr(ctnr[fd].store, '\n')))
 	{
 		len = read (fd, ctnr[fd].buff, BUFFER_SIZE);
-		if (*(ctnr[fd].buff) == '\0' || len == -1)
-			return (free_all(hold));
+		if (len == -1 || check_null(ctnr[fd].buff, len, &(ctnr[fd].store)))
+			return (NULL);
 		(ctnr[fd].buff)[len] = '\0';
-		ctnr[fd].store = store_append(ctnr[fd].store, ctnr[fd].buff, &hold);
+		ctnr[fd].store = store_append(ctnr[fd].store, ctnr[fd].buff);
 	}
 	len = 0;
 	while ((ctnr[fd].store)[len] != '\n' && (ctnr[fd].store)[len] != '\0')
 		len++;
-	ctnr[fd].store = generate_string(ctnr[fd].store, &out, &hold, len);
+	ctnr[fd].store = generate_strings(ctnr[fd].store, len, &out);
 	return (out);
 }
 
@@ -102,6 +116,7 @@ char	*get_next_line(int fd)
 // 	int		fd;
 // 	int		fd2;
 // 	char	*ln;
+// 	char	*ln2;
 // 	int		i;
 // 	FILE	*read_txt;
 // 	FILE	*read2_txt;
@@ -129,9 +144,9 @@ char	*get_next_line(int fd)
 // 	i = 0;
 // 	while (i < 3)
 // 	{
-// 		ln = get_next_line(fd2);
-// 		printf("%s\n", ln);
-// 		free (ln);
+// 		ln2 = get_next_line(fd2);
+// 		printf("%s\n", ln2);
+// 		free (ln2);
 // 		i++;
 // 	}
 // 	//1
@@ -149,9 +164,9 @@ char	*get_next_line(int fd)
 // 	i = 0;
 // 	while (i < 3)
 // 	{
-// 		ln = get_next_line(fd2);
-// 		printf("%s\n", ln);
-// 		free (ln);
+// 		ln2 = get_next_line(fd2);
+// 		printf("%s\n", ln2);
+// 		free (ln2);
 // 		i++;
 // 	}
 // 	close (fd);
