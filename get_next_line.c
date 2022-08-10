@@ -91,7 +91,7 @@ char	*get_next_line(int fd)
 
 	out = NULL;
 	len = 1;
-	if (fd < 0 || BUFFER_SIZE < 1 || fd > OPEN_MAX)
+	if (fd < 0 || BUFFER_SIZE < 1 || fd > 100)
 		return (NULL);
 	while (len > 0 && !(ft_strchr(ctnr.store, '\n')))
 	{
